@@ -1,65 +1,75 @@
 import neo4j, { Driver, Session } from 'neo4j-driver';
 
-// Neo4j connection singleton
-class Neo4jConnection {
-  private static instance: Neo4jConnection | null = null;
-  private driver: Driver | null = null;
-  private readonly uri: string;
-  private readonly username: string;
-  private readonly password: string;
+// Module-level variables to store connection state
+let driver: Driver | null = null;
+let uri: string | null = null;
+let username: string | null = null;
+let password: string | null = null;
 
-  private constructor() {
-    // Get connection details from environment variables
-    this.uri = process.env.NEO4J_URI || '';
-    this.username = process.env.NEO4J_USERNAME || '';
-    this.password = process.env.NEO4J_PASSWORD || '';
+// Load environment variables
+function loadConfig(): { uri: string; username: string; password: string } {
+  const loadedUri = process.env.NEO4J_URI || '';
+  const loadedUsername = process.env.NEO4J_USERNAME || '';
+  const loadedPassword = process.env.NEO4J_PASSWORD || '';
 
-    // Validate environment variables
-    if (!this.uri || !this.username || !this.password) {
-      throw new Error('Neo4j connection details missing from environment variables');
-    }
+  // Validate environment variables
+  if (!loadedUri || !loadedUsername || !loadedPassword) {
+    throw new Error('Neo4j connection details missing from environment variables');
   }
 
-  public static getInstance(): Neo4jConnection {
-    if (!Neo4jConnection.instance) {
-      Neo4jConnection.instance = new Neo4jConnection();
-    }
-    return Neo4jConnection.instance;
-  }
+  return {
+    uri: loadedUri,
+    username: loadedUsername,
+    password: loadedPassword
+  };
+}
 
-  public getDriver(): Driver {
-    if (!this.driver) {
-      this.driver = neo4j.driver(
-        this.uri,
-        neo4j.auth.basic(this.username, this.password)
-      );
+// Get driver with lazy initialization
+function getDriver(): Driver {
+  if (!driver) {
+    // Load config if not already loaded
+    if (!uri || !username || !password) {
+      const config = loadConfig();
+      uri = config.uri;
+      username = config.username;
+      password = config.password;
     }
-    return this.driver;
-  }
 
-  public getSession(): Session {
-    return this.getDriver().session();
+    driver = neo4j.driver(
+      uri,
+      neo4j.auth.basic(username, password)
+    );
   }
+  
+  return driver;
+}
 
-  public close(): void {
-    if (this.driver) {
-      this.driver.close();
-      this.driver = null;
-    }
+// Get a new session
+function getSession(): Session {
+  return getDriver().session();
+}
+
+// Close the driver connection
+function closeDriver(): void {
+  if (driver) {
+    driver.close();
+    driver = null;
   }
 }
+
+// Export the functions for use in other modules
+export { getDriver, getSession, closeDriver };
 
 // Helper functions for database operations
 export async function executeCypherQuery<T = Record<string, unknown>>(
   cypher: string,
   params: Record<string, unknown> = {}
 ): Promise<T[]> {
-  const dbConnection = Neo4jConnection.getInstance();
-  const session = dbConnection.getSession();
+  const session = getSession();
 
   try {
     const result = await session.run(cypher, params);
-    return result.records.map(record => {
+    return result.records.map((record) => {
       return record.toObject() as T;
     });
   } catch (error) {
@@ -73,9 +83,8 @@ export async function executeCypherQuery<T = Record<string, unknown>>(
 // Initialize database connection
 export function initializeDatabase(): void {
   try {
-    const dbConnection = Neo4jConnection.getInstance();
-    // Verify driver is available but don't store the reference
-    dbConnection.getDriver();
+    // Just get the driver to verify connection is working
+    getDriver();
     console.log('Neo4j database connection initialized');
     return;
   } catch (error) {
@@ -87,13 +96,9 @@ export function initializeDatabase(): void {
 // Close database connection
 export function closeDatabase(): void {
   try {
-    const dbConnection = Neo4jConnection.getInstance();
-    dbConnection.close();
+    closeDriver();
     console.log('Neo4j database connection closed');
   } catch (error) {
     console.error('Error closing Neo4j connection:', error);
   }
 }
-
-// Export the class instead of an instance
-export default Neo4jConnection;

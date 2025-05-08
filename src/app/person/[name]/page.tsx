@@ -6,23 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 
-import { Metadata } from 'next';
-
-interface PageProps {
-  params: { name: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const personName = decodeURIComponent(params.name);
-
-  return {
-    title: `${personName} | Social Graph`,
-    description: `View relationships for ${personName}`
-  };
-}
-
-export default async function PersonPage({ params }: PageProps) {
+export default async function PersonPage({ params }: { params: { name: string } }) {
   const personName = decodeURIComponent(params.name);
   let relationships: Relationship[] = [];
 
