@@ -8,21 +8,21 @@ import { ChevronLeft } from "lucide-react";
 
 import { Metadata } from 'next';
 
-type Props = {
+interface PageProps {
   params: { name: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const personName = decodeURIComponent(params.name);
-  
+
   return {
     title: `${personName} | Social Graph`,
     description: `View relationships for ${personName}`
   };
 }
 
-export default async function PersonPage({ params }: Props) {
+export default async function PersonPage({ params }: PageProps) {
   const personName = decodeURIComponent(params.name);
   let relationships: Relationship[] = [];
 
