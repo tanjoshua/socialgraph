@@ -8,13 +8,13 @@ import { ChevronLeft } from "lucide-react";
 
 export default async function PersonPage({ params }: { params: { name: string } }) {
   const personName = decodeURIComponent(params.name);
-  
+
   // Initialize database connection
   initializeDatabase();
-  
+
   // Get relationships for this person
   const relationships = await getRelationshipsForPerson(personName);
-  
+
   return (
     <div className="min-h-screen p-8">
       <main className="max-w-4xl mx-auto">
@@ -44,35 +44,32 @@ export default async function PersonPage({ params }: { params: { name: string } 
             {relationships.map((rel, index) => {
               // Determine the other person in the relationship
               const otherPerson = rel.person1 === personName ? rel.person2 : rel.person1;
-              
+
               return (
-                <Card key={index} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="flex items-center justify-between p-6">
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-500 mr-4">
-                          {otherPerson.charAt(0).toUpperCase()}
-                        </span>
-                        <div>
-                          <h3 className="font-medium text-lg">{otherPerson}</h3>
-                          <Link href={`/person/${encodeURIComponent(otherPerson)}`} passHref>
-                            <Button variant="link" className="p-0 h-auto text-sm">
-                              View their relationships
-                            </Button>
-                          </Link>
+                <Link href={`/person/${encodeURIComponent(otherPerson)}`} key={index} className="block">
+                  <Card className="overflow-hidden hover:shadow-md transition-shadow">
+                    <CardContent className="p-0">
+                      <div className="flex items-center justify-between p-6">
+                        <div className="flex items-center">
+                          <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-500 mr-4">
+                            {otherPerson.charAt(0).toUpperCase()}
+                          </span>
+                          <div>
+                            <h3 className="font-medium text-lg">{otherPerson}</h3>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <Badge className="mb-1 text-lg py-1 px-3">
+                            Score: {rel.closeness_score}
+                          </Badge>
+                          <span className="text-sm text-gray-500">
+                            Compared {rel.comparison_count} times
+                          </span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end">
-                        <Badge className="mb-1 text-lg py-1 px-3">
-                          Score: {rel.closeness_score}
-                        </Badge>
-                        <span className="text-sm text-gray-500">
-                          Compared {rel.comparison_count} times
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
           </div>

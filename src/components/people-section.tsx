@@ -4,7 +4,7 @@ import { useState } from "react"
 import { AddPersonForm } from "./add-person-form"
 import { Person } from "@/lib/actions"
 import { Button } from "./ui/button"
-import { Trash2, Info } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { deletePersonAction } from "@/app/actions"
 import Link from "next/link"
 import {
@@ -71,31 +71,25 @@ export function PeopleSection({ people }: PeopleSectionProps) {
         ) : (
           <ul className="divide-y">
             {people.map((person, index) => (
-              <li key={index} className="p-4 flex items-center justify-between">
+              <li key={index} className="relative">
                 <Link 
                   href={`/person/${encodeURIComponent(person.name)}`}
-                  className="flex items-center flex-1 cursor-pointer" 
+                  className="block p-4 hover:bg-gray-50 transition-colors" 
                 >
-                  <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-500 mr-4">
-                    {person.name.charAt(0).toUpperCase()}
-                  </span>
-                  <span className="font-medium">{person.name}</span>
+                  <div className="flex items-center">
+                    <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-500 mr-4">
+                      {person.name.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="font-medium">{person.name}</span>
+                  </div>
                 </Link>
-                <div className="flex items-center">
-                  <Link href={`/person/${encodeURIComponent(person.name)}`}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="mr-2"
-                      aria-label={`View relationships for ${person.name}`}
-                    >
-                      <Info className="h-4 w-4 text-gray-500 hover:text-blue-500" />
-                    </Button>
-                  </Link>
+                {/* Position the delete button absolutely to avoid it being part of the link */}
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={(e) => {
+                      e.preventDefault(); // Prevent the link navigation
                       e.stopPropagation();
                       handleDeleteClick(person.name);
                     }}
