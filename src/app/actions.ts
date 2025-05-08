@@ -6,6 +6,7 @@ import {
   deletePerson as deletePersonFromDb,
   getPairsToCompare as getPairsToCompareFromDb,
   submitComparison as submitComparisonToDb,
+  getRelationshipsForPerson as getRelationshipsForPersonFromDb,
 } from "@/lib/actions";
 
 export async function addPersonAction(name: string) {
@@ -77,6 +78,21 @@ export async function submitComparisonAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to submit comparison"
+    };
+  }
+}
+
+export async function getRelationshipsForPersonAction(name: string) {
+  try {
+    // Get relationships for a specific person from database
+    const result = await getRelationshipsForPersonFromDb(name);
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Error getting relationships for person:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get relationships for person"
     };
   }
 }
