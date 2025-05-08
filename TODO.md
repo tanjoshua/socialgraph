@@ -6,9 +6,9 @@
 - [ ] Enable Graph Data Science on your Aura instance
 
 ## 2. Create Database Connection
-- [ ] Add neo4j-driver package
-- [ ] Create a simple db.js connection utility
-- [ ] Store connection details in .env.local
+- [x] Add neo4j-driver package
+- [x] Create a simple db.ts connection utility
+- [x] Store connection details in .env
 
 ## 3. Create Essential Pages
 - [ ] Home page with links
