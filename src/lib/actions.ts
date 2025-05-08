@@ -21,6 +21,18 @@ interface CommunityGroup {
   group: number;
 }
 
+// Delete a person from the graph
+export async function deletePerson(name: string): Promise<boolean> {
+  const cypher = `
+    MATCH (p:Person {name: $name})
+    DETACH DELETE p
+    RETURN count(p) as deleted
+  `;
+  
+  const result = await executeCypherQuery<{deleted: number}>(cypher, { name });
+  return result[0]?.deleted > 0;
+}
+
 // Add a new person to the graph
 export async function addPerson(name: string): Promise<Person> {
   const cypher = `
