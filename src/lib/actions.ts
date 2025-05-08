@@ -4,14 +4,14 @@ export interface Person {
   name: string;
 }
 
-interface Relationship {
+export interface Relationship {
   person1: string;
   person2: string;
   closeness_score: number;
   comparison_count: number;
 }
 
-interface ComparisonPair {
+export interface ComparisonPair {
   pair1: [string, string];
   pair2: [string, string];
 }

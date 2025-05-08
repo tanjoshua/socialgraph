@@ -11,21 +11,23 @@
 - [x] Store connection details in .env
 
 ## 3. Create Essential Pages
-- [ ] Home page with links
-- [ ] People management page
-  - [ ] Simple form to add people
-  - [ ] List of added people
-- [ ] Comparison page (core feature)
-  - [ ] Show two pairs of people
-  - [ ] Button to select which pair is closer
+- [x] Home page with links
+- [x] People management page
+  - [x] Simple form to add people
+  - [x] List of added people
+  - [x] Delete people functionality
+- [x] Comparison page (core feature)
+  - [x] Show two pairs of people
+  - [x] Button to select which pair is closer
 - [ ] Results page
   - [ ] Simple list of relationships sorted by closeness
   - [ ] Basic group visualization
 
 ## 4. Implement Server Actions
-- [ ] addPerson() - Add a new person
-- [ ] getPairsToCompare() - Get two relationship pairs
-- [ ] submitComparison() - Update scores after selection
+- [x] addPerson() - Add a new person
+- [x] deletePerson() - Delete a person
+- [x] getPairsToCompare() - Get two relationship pairs
+- [x] submitComparison() - Update scores after selection
 - [ ] getGroups() - Run community detection
 
 ## 5. Test

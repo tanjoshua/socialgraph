@@ -1,6 +1,9 @@
+
 import { initializeDatabase } from "../lib/db";
 import { getAllPeople } from "../lib/actions";
 import { PeopleSection } from "@/components/people-section";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
 
 async function getPeople() {
   try {
@@ -32,24 +35,21 @@ export default async function Home() {
       <main className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Social Graph - Relationship Closeness System</h1>
 
-        <div className="mb-8 p-4 border rounded-md shadow-sm">
-          <h2 className="text-xl font-semibold mb-2">Neo4j Database Connection</h2>
-          <div className={`p-3 rounded-md ${dbResult.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {dbResult.success ? (
-              <p>✅ Successfully connected to Neo4j database!</p>
-            ) : (
-              <div>
-                <p>❌ Failed to connect to Neo4j database</p>
-                {dbResult.error && (
-                  <div className="mt-2">
-                    <p className="font-semibold">Error:</p>
-                    <pre className="mt-1 text-sm whitespace-pre-wrap overflow-auto">{dbResult.error}</pre>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+        {/* Navigation */}
+        <div className="mb-8">
+          <Tabs defaultValue="home" className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="home" asChild>
+                <Link href="/">Home</Link>
+              </TabsTrigger>
+              <TabsTrigger value="compare" asChild>
+                <Link href="/compare">Compare Relationships</Link>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
+
+
 
         {dbResult.success && <PeopleSection people={dbResult.data} />}
       </main>
