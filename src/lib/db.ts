@@ -40,7 +40,7 @@ function getDriver(): Driver {
       neo4j.auth.basic(username, password)
     );
   }
-  
+
   return driver;
 }
 

@@ -5,14 +5,13 @@ import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { getPairsToCompareAction, submitComparisonAction } from "@/app/actions"
 import { ComparisonPair } from "@/lib/actions"
-import { ArrowLeftRight, RefreshCw, Check } from "lucide-react"
+import { ArrowLeftRight, RefreshCw } from "lucide-react"
 
 export function ComparisonSection() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pairs, setPairs] = useState<ComparisonPair | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submissionSuccess, setSubmissionSuccess] = useState(false)
 
   // Load pairs on component mount
   useEffect(() => {
@@ -22,11 +21,10 @@ export function ComparisonSection() {
   const loadPairs = async () => {
     setIsLoading(true)
     setError(null)
-    setSubmissionSuccess(false)
-    
+
     try {
       const result = await getPairsToCompareAction()
-      
+
       if (result.success && result.data) {
         setPairs(result.data)
       } else {
@@ -42,22 +40,19 @@ export function ComparisonSection() {
 
   const handleComparisonSubmit = async (pair1Won: boolean) => {
     if (!pairs) return
-    
+
     setIsSubmitting(true)
-    
+
     try {
       const result = await submitComparisonAction(
         pairs.pair1,
         pairs.pair2,
         pair1Won
       )
-      
+
       if (result.success) {
-        setSubmissionSuccess(true)
-        // Wait 1.5 seconds before loading new pairs
-        setTimeout(() => {
-          loadPairs()
-        }, 1500)
+        // Immediately start loading new pairs
+        loadPairs()
       } else {
         setError(result.error || "Failed to submit comparison")
       }
@@ -69,7 +64,7 @@ export function ComparisonSection() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || isSubmitting) {
     return (
       <div className="flex flex-col items-center justify-center p-8 border rounded-md shadow-sm">
         <RefreshCw className="h-8 w-8 animate-spin text-blue-500 mb-4" />
@@ -83,8 +78,8 @@ export function ComparisonSection() {
       <div className="p-6 border rounded-md shadow-sm bg-red-50 text-red-800">
         <h2 className="text-xl font-semibold mb-2">Error</h2>
         <p>{error}</p>
-        <Button 
-          className="mt-4" 
+        <Button
+          className="mt-4"
           onClick={loadPairs}
           disabled={isLoading}
         >
@@ -99,8 +94,8 @@ export function ComparisonSection() {
       <div className="p-6 border rounded-md shadow-sm bg-yellow-50 text-yellow-800">
         <h2 className="text-xl font-semibold mb-2">No Pairs Available</h2>
         <p>There are no relationship pairs available for comparison.</p>
-        <Button 
-          className="mt-4" 
+        <Button
+          className="mt-4"
           onClick={loadPairs}
           disabled={isLoading}
         >
@@ -119,13 +114,6 @@ export function ComparisonSection() {
           Your choices help build a more accurate social graph.
         </p>
       </div>
-
-      {submissionSuccess && (
-        <div className="mb-6 p-4 border rounded-md shadow-sm bg-green-50 text-green-800 flex items-center">
-          <Check className="h-5 w-5 mr-2" />
-          <p>Comparison recorded successfully! Loading next comparison...</p>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* First Pair */}
@@ -152,10 +140,9 @@ export function ComparisonSection() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button 
+            <Button
               className="w-full"
               onClick={() => handleComparisonSubmit(true)}
-              disabled={isSubmitting}
             >
               This Pair is Closer
             </Button>
@@ -186,10 +173,9 @@ export function ComparisonSection() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button 
+            <Button
               className="w-full"
               onClick={() => handleComparisonSubmit(false)}
-              disabled={isSubmitting}
             >
               This Pair is Closer
             </Button>
@@ -198,10 +184,10 @@ export function ComparisonSection() {
       </div>
 
       <div className="mt-6 flex justify-center">
-        <Button 
+        <Button
           variant="outline"
           onClick={loadPairs}
-          disabled={isLoading || isSubmitting}
+          disabled={isLoading}
           className="flex items-center"
         >
           <RefreshCw className="h-4 w-4 mr-2" />
