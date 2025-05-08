@@ -1,5 +1,5 @@
 import { initializeDatabase } from "@/lib/db";
-import { getRelationshipsForPerson } from "@/lib/actions";
+import { getRelationshipsForPerson, type Relationship } from "@/lib/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -24,12 +24,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PersonPage({ params }: Props) {
   const personName = decodeURIComponent(params.name);
+  let relationships: Relationship[] = [];
 
-  // Initialize database connection
-  initializeDatabase();
+  try {
+    // Initialize database connection
+    initializeDatabase();
 
-  // Get relationships for this person
-  const relationships = await getRelationshipsForPerson(personName);
+    // Get relationships for this person
+    relationships = await getRelationshipsForPerson(personName);
+  } catch (error) {
+    console.error('Error fetching relationships:', error);
+  }
 
   return (
     <div className="min-h-screen p-8">

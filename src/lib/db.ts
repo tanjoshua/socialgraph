@@ -2,7 +2,7 @@ import neo4j, { Driver, Session } from 'neo4j-driver';
 
 // Neo4j connection singleton
 class Neo4jConnection {
-  private static instance: Neo4jConnection;
+  private static instance: Neo4jConnection | null = null;
   private driver: Driver | null = null;
   private readonly uri: string;
   private readonly username: string;
@@ -56,7 +56,7 @@ export async function executeCypherQuery<T = Record<string, unknown>>(
 ): Promise<T[]> {
   const dbConnection = Neo4jConnection.getInstance();
   const session = dbConnection.getSession();
-  
+
   try {
     const result = await session.run(cypher, params);
     return result.records.map(record => {
@@ -95,4 +95,5 @@ export function closeDatabase(): void {
   }
 }
 
-export default Neo4jConnection.getInstance();
+// Export the class instead of an instance
+export default Neo4jConnection;
