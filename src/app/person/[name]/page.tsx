@@ -6,8 +6,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 
-export default async function PersonPage({ params }: { params: { name: string } }) {
-  const personName = decodeURIComponent(params.name);
+export default async function PersonPage({
+  params,
+}: {
+  params: Promise<{ name: string }>
+}) {
+  const personName = decodeURIComponent((await params).name);
   let relationships: Relationship[] = [];
 
   try {
