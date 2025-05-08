@@ -1,5 +1,6 @@
 import { initializeDatabase } from "../lib/db";
 import { getAllPeople } from "../lib/actions";
+import { PeopleSection } from "@/components/people-section";
 
 async function getPeople() {
   try {
@@ -50,27 +51,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">People in Database</h2>
-          {dbResult.success && (
-            <div>
-              {dbResult.data.length === 0 ? (
-                <p className="text-gray-500">No people found in the database. Add some people to get started.</p>
-              ) : (
-                <ul className="divide-y">
-                  {dbResult.data.map((person, index) => (
-                    <li key={index} className="py-3 flex items-center">
-                      <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-500 mr-3">
-                        {person.name.charAt(0).toUpperCase()}
-                      </span>
-                      <span>{person.name}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
+        {dbResult.success && <PeopleSection people={dbResult.data} />}
       </main>
     </div>
   );

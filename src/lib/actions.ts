@@ -1,6 +1,6 @@
 import { executeCypherQuery } from './db';
 
-interface Person {
+export interface Person {
   name: string;
 }
 
