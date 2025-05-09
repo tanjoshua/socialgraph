@@ -1,29 +1,33 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { getPairsToCompareAction, submitComparisonAction } from "@/app/actions"
 import { ComparisonPair } from "@/lib/actions"
 import { ArrowLeftRight, RefreshCw } from "lucide-react"
 
+// Import the same storage key used in UserSelector
+const USER_STORAGE_KEY = "selectedUser"
+
 export function ComparisonSection() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pairs, setPairs] = useState<ComparisonPair | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<string | null>(null)
 
-  // Load pairs on component mount
-  useEffect(() => {
-    loadPairs()
-  }, [])
-
-  const loadPairs = async () => {
+  // Define loadPairs with useCallback to avoid dependency issues
+  const loadPairs = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const result = await getPairsToCompareAction()
+      // Get the current selected user from state
+      const currentUser = typeof window !== 'undefined' ? localStorage.getItem(USER_STORAGE_KEY) : selectedUser
+      
+      // Pass the selected user to the action to prioritize relevant pairs
+      const result = await getPairsToCompareAction(currentUser || undefined)
 
       if (result.success && result.data) {
         setPairs(result.data)
@@ -36,7 +40,16 @@ export function ComparisonSection() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [selectedUser])
+
+  // Load selected user from localStorage on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem(USER_STORAGE_KEY)
+      setSelectedUser(storedUser)
+    }
+    loadPairs()
+  }, [loadPairs])
 
   const handleComparisonSubmit = async (pair1Won: boolean) => {
     if (!pairs) return

@@ -90,7 +90,8 @@ export async function getAllPeople(): Promise<Person[]> {
 }
 
 // Get two random pairs of people for comparison
-export async function getPairsToCompare(): Promise<ComparisonPair> {
+export async function getPairsToCompare(selectedUser?: string): Promise<ComparisonPair> {
+  console.log(selectedUser)
   // First, get all possible relationship pairs
   const cypher = `
     MATCH (a:Person), (b:Person)

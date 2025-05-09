@@ -45,10 +45,10 @@ export async function deletePersonAction(name: string) {
   }
 }
 
-export async function getPairsToCompareAction() {
+export async function getPairsToCompareAction(selectedUser?: string) {
   try {
-    // Get pairs to compare from database
-    const result = await getPairsToCompareFromDb();
+    // Get pairs to compare from database, prioritizing pairs related to the selected user
+    const result = await getPairsToCompareFromDb(selectedUser);
 
     return { success: true, data: result };
   } catch (error) {
