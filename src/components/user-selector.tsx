@@ -71,7 +71,7 @@ export function UserSelector({ people }: UserSelectorProps) {
                 <span>Clear</span>
               </Button>
             )}
-            <Select onValueChange={handleUserSelect} defaultValue={selectedUser || undefined}>
+            <Select onValueChange={handleUserSelect} value={selectedUser || undefined}>
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder="Select a person" />
               </SelectTrigger>
