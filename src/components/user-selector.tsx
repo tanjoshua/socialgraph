@@ -20,7 +20,7 @@ interface UserSelectorProps {
 }
 
 export function UserSelector({ people }: UserSelectorProps) {
-  const [selectedUser, setSelectedUser] = useState<string | null>(null)
+  const [selectedUser, setSelectedUser] = useState("")
   
   // Load selected user from localStorage on component mount
   useEffect(() => {
@@ -38,7 +38,7 @@ export function UserSelector({ people }: UserSelectorProps) {
 
   // Handle removing user selection
   const handleRemoveSelection = () => {
-    setSelectedUser(null)
+    setSelectedUser("")
     localStorage.removeItem(USER_STORAGE_KEY)
   }
 
@@ -49,18 +49,18 @@ export function UserSelector({ people }: UserSelectorProps) {
           <div className="flex items-center gap-2">
             <UserRoundIcon className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg">
-              {selectedUser ? `Selected user is ${selectedUser}` : "User Selection"}
+              {!!selectedUser ? `Selected user is ${selectedUser}` : "User Selection"}
             </CardTitle>
           </div>
           <CardDescription>
-            {selectedUser 
+            {!!selectedUser 
               ? "We will ask you for comparisons of people you know better"
               : "Select who you are for more suitable comparisons"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-center gap-3">
-            {selectedUser && (
+            {!!selectedUser && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -71,7 +71,7 @@ export function UserSelector({ people }: UserSelectorProps) {
                 <span>Clear</span>
               </Button>
             )}
-            <Select onValueChange={handleUserSelect} value={selectedUser || undefined}>
+            <Select onValueChange={handleUserSelect} value={selectedUser}>
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder="Select a person" />
               </SelectTrigger>
