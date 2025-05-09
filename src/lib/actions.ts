@@ -91,36 +91,109 @@ export async function getAllPeople(): Promise<Person[]> {
 
 // Get two pairs of people for comparison, prioritizing the selected user if specified
 export async function getPairsToCompare(selectedUser?: string): Promise<ComparisonPair> {
-  // First, get all possible relationship pairs
-  const cypher = `
-    MATCH (a:Person), (b:Person)
-    WHERE id(a) < id(b)
-    RETURN a.name as person1, b.name as person2
-  `;
+  // If no selectedUser is provided, get all possible relationship pairs
+  if (!selectedUser) {
+    const cypher = `
+      MATCH (a:Person), (b:Person)
+      WHERE id(a) < id(b)
+      RETURN a.name as person1, b.name as person2
+    `;
 
-  const relationships = await executeCypherQuery<{ person1: string, person2: string }>(cypher);
+    const relationships = await executeCypherQuery<{ person1: string, person2: string }>(cypher);
 
-  if (relationships.length < 2) {
-    throw new Error('Not enough people to create two comparison pairs');
+    if (relationships.length < 2) {
+      throw new Error('Not enough people to create two comparison pairs');
+    }
+
+    // Randomly select two different pairs
+    const shuffled = [...relationships].sort(() => 0.5 - Math.random());
+    const pair1 = [shuffled[0].person1, shuffled[0].person2] as [string, string];
+    const pair2 = [shuffled[1].person1, shuffled[1].person2] as [string, string];
+
+    // Return serialized data safe for client components
+    return serializeNeo4jObject<ComparisonPair>({
+      pair1,
+      pair2
+    });
   }
 
-  // Filter relationships based on selectedUser
-  let filteredRelationships = relationships;
-  if (selectedUser) {
-    filteredRelationships = relationships.filter(rel =>
-      rel.person1 === selectedUser || rel.person2 === selectedUser
-    );
+  // If selectedUser is provided, get pairs involving the selected user or users with high closeness to them
+  const cypher = `
+    // First approach: Find direct relationships involving the selected user
+    MATCH (selected:Person {name: $selectedUser})-[r1:RELATED_TO]-(other:Person)
+    WITH selected, collect({person1: selected.name, person2: other.name}) as directRelationships
+    
+    // Second approach: Find users with high closeness to the selected user and their relationships
+    MATCH (selected)-[r2:RELATED_TO]-(connectedPerson:Person)
+    WHERE r2.closeness_score IS NOT NULL
+    WITH selected, directRelationships, connectedPerson, r2.closeness_score as closeness
+    ORDER BY closeness DESC
+    LIMIT 5
+    
+    // Find relationships between these high-closeness users and others
+    OPTIONAL MATCH (connectedPerson)-[r3:RELATED_TO]-(thirdPerson:Person)
+    WHERE thirdPerson.name <> selected.name
+    
+    // Collect these indirect relationships
+    WITH selected, directRelationships, 
+         collect({person1: connectedPerson.name, person2: thirdPerson.name}) as indirectRelationships
+    
+    // Combine both relationship types and return
+    WITH directRelationships + indirectRelationships as allRelationships
+    UNWIND allRelationships as rel
+    WITH rel WHERE rel.person1 IS NOT NULL AND rel.person2 IS NOT NULL
+    RETURN DISTINCT rel.person1 as person1, rel.person2 as person2
+  `;
 
-    // If no relationships with selectedUser, fall back to all relationships
-    if (filteredRelationships.length < 2) {
-      filteredRelationships = relationships;
+  const relationships = await executeCypherQuery<{ person1: string, person2: string }>(cypher, { selectedUser });
+
+  // Fallback to getting all relationships if we don't have enough
+  if (relationships.length < 2) {
+    const fallbackCypher = `
+      MATCH (a:Person), (b:Person)
+      WHERE id(a) < id(b)
+      RETURN a.name as person1, b.name as person2
+    `;
+
+    const allRelationships = await executeCypherQuery<{ person1: string, person2: string }>(fallbackCypher);
+
+    if (allRelationships.length < 2) {
+      throw new Error('Not enough people to create two comparison pairs');
     }
+
+    // Randomly select two different pairs
+    const shuffled = [...allRelationships].sort(() => 0.5 - Math.random());
+    const pair1 = [shuffled[0].person1, shuffled[0].person2] as [string, string];
+    const pair2 = [shuffled[1].person1, shuffled[1].person2] as [string, string];
+
+    return serializeNeo4jObject<ComparisonPair>({
+      pair1,
+      pair2
+    });
   }
 
   // Randomly select two different pairs
-  const shuffled = [...filteredRelationships].sort(() => 0.5 - Math.random());
+  const shuffled = [...relationships].sort(() => 0.5 - Math.random());
   const pair1 = [shuffled[0].person1, shuffled[0].person2] as [string, string];
-  const pair2 = [shuffled[1].person1, shuffled[1].person2] as [string, string];
+
+  // Make sure pair2 is different from pair1
+  let pairIndex = 1;
+  while (pairIndex < shuffled.length) {
+    if (
+      (shuffled[pairIndex].person1 !== pair1[0] || shuffled[pairIndex].person2 !== pair1[1]) &&
+      (shuffled[pairIndex].person1 !== pair1[1] || shuffled[pairIndex].person2 !== pair1[0])
+    ) {
+      break;
+    }
+    pairIndex++;
+  }
+
+  // If we couldn't find a different pair, just use the next available one
+  if (pairIndex >= shuffled.length) {
+    pairIndex = Math.min(1, shuffled.length - 1);
+  }
+
+  const pair2 = [shuffled[pairIndex].person1, shuffled[pairIndex].person2] as [string, string];
 
   // Return serialized data safe for client components
   return serializeNeo4jObject<ComparisonPair>({
