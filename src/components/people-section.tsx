@@ -117,7 +117,7 @@ export function PeopleSection({ people }: PeopleSectionProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <span className="font-medium">{personToDelete}</span> from the database and remove all their relationships.
+              This will permanently delete <span className="font-medium">{personToDelete}</span> from the database and remove all their interaction records.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

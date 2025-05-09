@@ -39,7 +39,7 @@ export default async function ComparePage() {
   return (
     <div className="min-h-screen p-8">
       <main className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Compare Relationships</h1>
+        <h1 className="text-3xl font-bold mb-6">Compare Interactions</h1>
 
         {/* Navigation */}
         <div className="mb-8">
@@ -49,7 +49,7 @@ export default async function ComparePage() {
                 <Link href="/">Home</Link>
               </TabsTrigger>
               <TabsTrigger value="compare" asChild>
-                <Link href="/compare">Compare Relationships</Link>
+                <Link href="/compare">Compare Interactions</Link>
               </TabsTrigger>
             </TabsList>
           </Tabs>

@@ -45,7 +45,7 @@ export async function addPerson(name: string): Promise<Person> {
   return { name: result[0]?.name as string };
 }
 
-// Create or update relationship between two people
+// Create or update interaction record between two people
 export async function createOrUpdateRelationship(name1: string, name2: string): Promise<Relationship> {
   const cypher = `
     MATCH (a:Person {name: $name1}), (b:Person {name: $name2})
@@ -59,7 +59,7 @@ export async function createOrUpdateRelationship(name1: string, name2: string): 
   return serializeNeo4jObject<Relationship>(result[0]);
 }
 
-// Update a relationship score after comparison
+// Update an interaction score after comparison
 export async function updateRelationshipScore(
   name1: string,
   name2: string,
@@ -116,7 +116,7 @@ export async function getPairsToCompare(): Promise<ComparisonPair> {
   });
 }
 
-// Get all relationships for visualization, sorted by closeness score
+// Get all interactions for visualization, sorted by interaction score
 export async function getAllRelationships(): Promise<Relationship[]> {
   const cypher = `
     MATCH (a:Person)-[r:KNOWS]-(b:Person)
@@ -130,7 +130,7 @@ export async function getAllRelationships(): Promise<Relationship[]> {
   return serializeNeo4jObject<Relationship[]>(result);
 }
 
-// Get all relationships for a specific person, sorted by closeness score
+// Get all interactions for a specific person, sorted by interaction score
 export async function getRelationshipsForPerson(name: string): Promise<Relationship[]> {
   const cypher = `
     MATCH (a:Person {name: $name})-[r:KNOWS]-(b:Person)

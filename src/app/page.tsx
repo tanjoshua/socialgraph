@@ -33,7 +33,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen p-8">
       <main className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Social Graph - Relationship Closeness System</h1>
+        <h1 className="text-3xl font-bold mb-6">Social Graph - Interaction Tracking System</h1>
 
         {/* Navigation */}
         <div className="mb-8">
@@ -43,7 +43,7 @@ export default async function Home() {
                 <Link href="/">Home</Link>
               </TabsTrigger>
               <TabsTrigger value="compare" asChild>
-                <Link href="/compare">Compare Relationships</Link>
+                <Link href="/compare">Compare Interactions</Link>
               </TabsTrigger>
             </TabsList>
           </Tabs>

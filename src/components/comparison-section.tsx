@@ -93,7 +93,7 @@ export function ComparisonSection() {
     return (
       <div className="p-6 border rounded-md shadow-sm bg-yellow-50 text-yellow-800">
         <h2 className="text-xl font-semibold mb-2">No Pairs Available</h2>
-        <p>There are no relationship pairs available for comparison.</p>
+        <p>There are no interaction pairs available for comparison.</p>
         <Button
           className="mt-4"
           onClick={loadPairs}
@@ -108,9 +108,9 @@ export function ComparisonSection() {
   return (
     <div className="mb-8">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Which Relationship is Closer?</h2>
+        <h2 className="text-xl font-semibold mb-2">Which Pair Has More Interactions?</h2>
         <p className="text-gray-600">
-          Select the pair of people who you believe have a closer relationship.
+          Select the pair of people who you believe have more interactions with each other.
           Your choices help build a more accurate social graph.
         </p>
       </div>
@@ -120,7 +120,7 @@ export function ComparisonSection() {
         <Card className="border shadow-sm hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle>Pair 1</CardTitle>
-            <CardDescription>Select if these people are closer</CardDescription>
+            <CardDescription>Select if these people has interacted more</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center space-x-4 py-4">
@@ -144,7 +144,7 @@ export function ComparisonSection() {
               className="w-full"
               onClick={() => handleComparisonSubmit(true)}
             >
-              This Pair is Closer
+              This Pair Interacts More
             </Button>
           </CardFooter>
         </Card>
@@ -153,7 +153,7 @@ export function ComparisonSection() {
         <Card className="border shadow-sm hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle>Pair 2</CardTitle>
-            <CardDescription>Select if these people are closer</CardDescription>
+            <CardDescription>Select if these people have interacted more</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center space-x-4 py-4">
@@ -177,7 +177,7 @@ export function ComparisonSection() {
               className="w-full"
               onClick={() => handleComparisonSubmit(false)}
             >
-              This Pair is Closer
+              This Pair Interacts More
             </Button>
           </CardFooter>
         </Card>
