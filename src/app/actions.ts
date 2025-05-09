@@ -96,3 +96,42 @@ export async function getRelationshipsForPersonAction(name: string) {
     };
   }
 }
+
+export async function addPeopleAction(names: string[]) {
+  try {
+    const results = [];
+    let hasErrors = false;
+    let errorMessage = "";
+
+    // Add each person to database
+    for (const name of names) {
+      try {
+        const result = await addPersonToDb(name.trim());
+        results.push(result);
+      } catch (error) {
+        hasErrors = true;
+        errorMessage += `Error adding "${name}": ${error instanceof Error ? error.message : String(error)}. `;
+      }
+    }
+
+    // Revalidate the homepage to show the updated list
+    revalidatePath("/");
+
+    if (hasErrors) {
+      return { 
+        success: true, 
+        data: results,
+        partialSuccess: true,
+        error: errorMessage
+      };
+    }
+
+    return { success: true, data: results };
+  } catch (error) {
+    console.error("Error in bulk adding people:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to add people"
+    };
+  }
+}
