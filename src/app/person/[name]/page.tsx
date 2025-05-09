@@ -34,9 +34,9 @@ export default async function PersonPage({
               Back to People
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">Relationships for {personName}</h1>
+          <h1 className="text-3xl font-bold">Interactions of {personName}</h1>
           <p className="text-gray-500 mt-2">
-            Showing closeness scores with other people
+            Showing closeness (number of interactions) scores with other people
           </p>
         </div>
 
@@ -44,7 +44,7 @@ export default async function PersonPage({
           <Card>
             <CardContent className="pt-6">
               <div className="text-center py-6 text-gray-500">
-                No relationships found for {personName}. Try making some comparisons first.
+                No interactions recorded for {personName}. Try making some comparisons first.
               </div>
             </CardContent>
           </Card>

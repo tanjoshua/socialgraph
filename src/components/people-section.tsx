@@ -4,7 +4,7 @@ import { useState } from "react"
 import { AddPersonForm } from "./add-person-form"
 import { Person } from "@/lib/actions"
 import { Button } from "./ui/button"
-import { Trash2 } from "lucide-react"
+import { Trash2, Search } from "lucide-react"
 import { deletePersonAction } from "@/app/actions"
 import Link from "next/link"
 import {
@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog"
+import { Input } from "./ui/input"
 
 interface PeopleSectionProps {
   people: Person[]
@@ -29,6 +30,7 @@ export function PeopleSection({ people }: PeopleSectionProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [personToDelete, setPersonToDelete] = useState<string | null>(null)
   const [isAlertOpen, setIsAlertOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const handleDeleteClick = (name: string) => {
     setPersonToDelete(name)
@@ -53,6 +55,11 @@ export function PeopleSection({ people }: PeopleSectionProps) {
 
 
 
+  // Filter people based on search query
+  const filteredPeople = people.filter(person => 
+    person.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
@@ -66,6 +73,19 @@ export function PeopleSection({ people }: PeopleSectionProps) {
           />
         )}
       </div>
+      
+      <div className="relative mb-4">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-4 w-4 text-gray-400" />
+        </div>
+        <Input
+          type="text"
+          placeholder="Search people..."
+          className="pl-10 w-full"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
 
       <div className="border rounded-md shadow-sm overflow-hidden">
         {people.length === 0 ? (
@@ -73,9 +93,13 @@ export function PeopleSection({ people }: PeopleSectionProps) {
             <p className="text-gray-500">No people found in the database.</p>
             <p className="text-gray-500 mt-1">Add some people to get started.</p>
           </div>
+        ) : filteredPeople.length === 0 ? (
+          <div className="p-6 text-center">
+            <p className="text-gray-500">No people match your search.</p>
+          </div>
         ) : (
           <ul className="divide-y">
-            {people.map((person, index) => (
+            {filteredPeople.map((person, index) => (
               <li key={index} className="relative">
                 <Link 
                   href={`/person/${encodeURIComponent(person.name)}`}
