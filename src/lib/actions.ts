@@ -126,7 +126,7 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
 
   const directRelationships = await executeCypherQuery<{ person1: string, person2: string }>(directCypher, { selectedUser });
 
-  // Then, get indirect relationships (connected through people close to the selected user)
+  // Then, get indirect relationships (relationships among the high-closeness users group)
   const indirectCypher = `
     // Find users with high closeness to the selected user
     MATCH (selected:Person {name: $selectedUser})-[r:KNOWS]-(connectedPerson:Person)
@@ -134,60 +134,23 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
     WITH selected, connectedPerson, r.closeness_score as closeness
     ORDER BY closeness DESC
     LIMIT 5
+    WITH selected, collect(connectedPerson) as closeUsers, collect(connectedPerson.name) as closeUserNames
     
-    // Find relationships between these high-closeness users and others
-    MATCH (connectedPerson)-[r2:KNOWS]-(thirdPerson:Person)
-    WHERE thirdPerson.name <> selected.name
+    // Unwind the close users to find all possible pairings among them,
+    // regardless of whether they already have relationships
+    UNWIND closeUsers as user1
+    UNWIND closeUsers as user2
+    WITH selected, user1, user2
+    WHERE id(user1) < id(user2) // Avoid duplicate pairs
+    AND user1.name <> user2.name // Avoid self relationships
     
-    RETURN DISTINCT connectedPerson.name as person1, thirdPerson.name as person2
+    RETURN DISTINCT user1.name as person1, user2.name as person2
   `;
 
   const indirectRelationships = await executeCypherQuery<{ person1: string, person2: string }>(indirectCypher, { selectedUser });
 
   // Combine relationships, prioritizing direct relationships
-  let allRelationships: { person1: string, person2: string }[] = [];
-
-  // Add all direct relationships first (these include the selected user)
-  allRelationships = [...directRelationships];
-
-  // Add indirect relationships that don't duplicate direct ones
-  indirectRelationships.forEach(rel => {
-    // Check if this relationship is already in our list
-    const isDuplicate = allRelationships.some(
-      existingRel =>
-        (existingRel.person1 === rel.person1 && existingRel.person2 === rel.person2) ||
-        (existingRel.person1 === rel.person2 && existingRel.person2 === rel.person1)
-    );
-
-    if (!isDuplicate) {
-      allRelationships.push(rel);
-    }
-  });
-
-  // Fallback to getting all relationships if we don't have enough
-  if (allRelationships.length < 2) {
-    const fallbackCypher = `
-      MATCH (a:Person), (b:Person)
-      WHERE id(a) < id(b)
-      RETURN a.name as person1, b.name as person2
-    `;
-
-    const allRelationships = await executeCypherQuery<{ person1: string, person2: string }>(fallbackCypher);
-
-    if (allRelationships.length < 2) {
-      throw new Error('Not enough people to create two comparison pairs');
-    }
-
-    // Randomly select two different pairs
-    const shuffled = [...allRelationships].sort(() => 0.5 - Math.random());
-    const pair1 = [shuffled[0].person1, shuffled[0].person2] as [string, string];
-    const pair2 = [shuffled[1].person1, shuffled[1].person2] as [string, string];
-
-    return serializeNeo4jObject<ComparisonPair>({
-      pair1,
-      pair2
-    });
-  }
+  const allRelationships: { person1: string, person2: string }[] = [...directRelationships, ...indirectRelationships];
 
   // Randomly select two different pairs
   const shuffled = [...allRelationships].sort(() => 0.5 - Math.random());
@@ -205,9 +168,14 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
     pairIndex++;
   }
 
-  // If we couldn't find a different pair, just use the next available one
-  if (pairIndex >= shuffled.length) {
-    pairIndex = Math.min(1, shuffled.length - 1);
+  // If we couldn't find a different pair, or we only have one relationship
+  if (pairIndex >= shuffled.length || shuffled.length < 2) {
+    // If we have only one relationship, create a fallback pair
+    // (in a real app, you might want to fetch more people or handle this differently)
+    return serializeNeo4jObject<ComparisonPair>({
+      pair1,
+      pair2: pair1 // Use the same pair as a fallback
+    });
   }
 
   const pair2 = [shuffled[pairIndex].person1, shuffled[pairIndex].person2] as [string, string];
