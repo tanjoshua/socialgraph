@@ -22,6 +22,9 @@ interface PeopleSectionProps {
   people: Person[]
 }
 
+// Set this to false to hide add/delete controls, true to show them
+const showControls = false;
+
 export function PeopleSection({ people }: PeopleSectionProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [personToDelete, setPersonToDelete] = useState<string | null>(null)
@@ -54,12 +57,14 @@ export function PeopleSection({ people }: PeopleSectionProps) {
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">People in Database</h2>
-        <AddPersonForm
-          onSuccess={() => {
-            // The revalidation is handled in the server action
-            // This client callback can be used for UI feedback if needed
-          }}
-        />
+        {showControls && (
+          <AddPersonForm
+            onSuccess={() => {
+              // The revalidation is handled in the server action
+              // This client callback can be used for UI feedback if needed
+            }}
+          />
+        )}
       </div>
 
       <div className="border rounded-md shadow-sm overflow-hidden">
@@ -84,21 +89,23 @@ export function PeopleSection({ people }: PeopleSectionProps) {
                   </div>
                 </Link>
                 {/* Position the delete button absolutely to avoid it being part of the link */}
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.preventDefault(); // Prevent the link navigation
-                      e.stopPropagation();
-                      handleDeleteClick(person.name);
-                    }}
-                    disabled={isDeleting}
-                    aria-label={`Delete ${person.name}`}
-                  >
-                    <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-500" />
-                  </Button>
-                </div>
+                {showControls && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.preventDefault(); // Prevent the link navigation
+                        e.stopPropagation();
+                        handleDeleteClick(person.name);
+                      }}
+                      disabled={isDeleting}
+                      aria-label={`Delete ${person.name}`}
+                    >
+                      <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-500" />
+                    </Button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
