@@ -126,28 +126,30 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
 
   const directRelationships = await executeCypherQuery<{ person1: string, person2: string }>(directCypher, { selectedUser });
 
-  // Then, get indirect relationships (relationships among the high-closeness users group)
-  const indirectCypher = `
-    // Find users with high closeness to the selected user
+  // Get the top closest people to the selected user
+  const closestPeopleCypher = `
     MATCH (selected:Person {name: $selectedUser})-[r:KNOWS]-(connectedPerson:Person)
     WHERE r.closeness_score IS NOT NULL
     WITH selected, connectedPerson, r.closeness_score as closeness
     ORDER BY closeness DESC
-    LIMIT 5
-    WITH selected, collect(connectedPerson) as closeUsers, collect(connectedPerson.name) as closeUserNames
-    
-    // Unwind the close users to find all possible pairings among them,
-    // regardless of whether they already have relationships
-    UNWIND closeUsers as user1
-    UNWIND closeUsers as user2
-    WITH selected, user1, user2
-    WHERE id(user1) < id(user2) // Avoid duplicate pairs
-    AND user1.name <> user2.name // Avoid self relationships
-    
-    RETURN DISTINCT user1.name as person1, user2.name as person2
+    LIMIT 10
+    RETURN connectedPerson.name as name
   `;
 
-  const indirectRelationships = await executeCypherQuery<{ person1: string, person2: string }>(indirectCypher, { selectedUser });
+  const closestPeople = await executeCypherQuery<{ name: string }>(closestPeopleCypher, { selectedUser });
+
+  // Generate all possible pair combinations in JavaScript
+  const indirectRelationships: { person1: string, person2: string }[] = [];
+
+  // Create all possible pairs (combinations) from the closest people
+  for (let i = 0; i < closestPeople.length; i++) {
+    for (let j = i + 1; j < closestPeople.length; j++) {
+      indirectRelationships.push({
+        person1: closestPeople[i].name,
+        person2: closestPeople[j].name
+      });
+    }
+  }
 
   // Combine relationships, prioritizing direct relationships
   const allRelationships: { person1: string, person2: string }[] = [...directRelationships, ...indirectRelationships];
