@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ComparisonSection } from "./comparison-section"
 import { UserSelector } from "./user-selector"
 import { Person } from "@/lib/actions"
@@ -16,6 +16,31 @@ interface ComparePageClientProps {
 
 export function ComparePageClient({ people, enoughPeople, peopleCount }: ComparePageClientProps) {
   const [selectedUser, setSelectedUser] = useState<string>("")
+
+  // Load selected user from localStorage on component mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem("selectedCompareUser")
+    if (savedUser) {
+      // Verify that the saved user still exists in the people list
+      const userExists = people.some(person => person.name === savedUser)
+      if (userExists) {
+        setSelectedUser(savedUser)
+      } else {
+        // If user no longer exists, remove from localStorage
+        localStorage.removeItem("selectedCompareUser")
+      }
+    }
+  }, [people])
+
+  // Save selected user to localStorage when it changes
+  useEffect(() => {
+    if (selectedUser) {
+      localStorage.setItem("selectedCompareUser", selectedUser)
+    } else {
+      // Remove from localStorage if no user is selected
+      localStorage.removeItem("selectedCompareUser")
+    }
+  }, [selectedUser])
 
   return (
     <div className="min-h-screen p-8">
