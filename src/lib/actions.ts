@@ -89,9 +89,8 @@ export async function getAllPeople(): Promise<Person[]> {
   return result.map(record => ({ name: record.name }));
 }
 
-// Get two random pairs of people for comparison
+// Get two pairs of people for comparison, prioritizing the selected user if specified
 export async function getPairsToCompare(selectedUser?: string): Promise<ComparisonPair> {
-  console.log(selectedUser)
   // First, get all possible relationship pairs
   const cypher = `
     MATCH (a:Person), (b:Person)
@@ -105,8 +104,21 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
     throw new Error('Not enough people to create two comparison pairs');
   }
 
+  // Filter relationships based on selectedUser
+  let filteredRelationships = relationships;
+  if (selectedUser) {
+    filteredRelationships = relationships.filter(rel =>
+      rel.person1 === selectedUser || rel.person2 === selectedUser
+    );
+
+    // If no relationships with selectedUser, fall back to all relationships
+    if (filteredRelationships.length < 2) {
+      filteredRelationships = relationships;
+    }
+  }
+
   // Randomly select two different pairs
-  const shuffled = [...relationships].sort(() => 0.5 - Math.random());
+  const shuffled = [...filteredRelationships].sort(() => 0.5 - Math.random());
   const pair1 = [shuffled[0].person1, shuffled[0].person2] as [string, string];
   const pair2 = [shuffled[1].person1, shuffled[1].person2] as [string, string];
 
