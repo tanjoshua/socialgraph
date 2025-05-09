@@ -3,6 +3,7 @@ import { getAllPeople } from "@/lib/actions";
 import { ComparisonSection } from "@/components/comparison-section";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserSelector } from "@/components/user-selector";
 import Link from "next/link";
 
 async function checkDatabaseAndPeople() {
@@ -17,6 +18,7 @@ async function checkDatabaseAndPeople() {
       success: true,
       enoughPeople: people.length >= 4, // Need at least 4 people to have 2 different pairs
       peopleCount: people.length,
+      people: people,
       error: null
     };
   } catch (error) {
@@ -25,6 +27,7 @@ async function checkDatabaseAndPeople() {
       success: false,
       enoughPeople: false,
       peopleCount: 0,
+      people: [],
       error: error instanceof Error ? error.message : String(error)
     };
   }
@@ -51,6 +54,9 @@ export default async function ComparePage() {
             </TabsList>
           </Tabs>
         </div>
+
+        {/* User Selector */}
+        {dbResult.success && <UserSelector people={dbResult.people} />}
 
 
 
