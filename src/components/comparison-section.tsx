@@ -197,7 +197,7 @@ export function ComparisonSection({ selectedUser }: ComparisonSectionProps) {
           className="flex items-center"
         >
           <RefreshCw className="h-4 w-4 mr-2" />
-          Get Different Pairs
+          Skip
         </Button>
       </div>
     </div>
