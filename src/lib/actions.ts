@@ -117,38 +117,55 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
     });
   }
 
-  // If selectedUser is provided, get pairs involving the selected user or users with high closeness to them
-  const cypher = `
-    // First approach: Find direct relationships involving the selected user
-    MATCH (selected:Person {name: $selectedUser})-[r1:RELATED_TO]-(other:Person)
-    WITH selected, collect({person1: selected.name, person2: other.name}) as directRelationships
-    
-    // Second approach: Find users with high closeness to the selected user and their relationships
-    MATCH (selected)-[r2:RELATED_TO]-(connectedPerson:Person)
-    WHERE r2.closeness_score IS NOT NULL
-    WITH selected, directRelationships, connectedPerson, r2.closeness_score as closeness
+  // If selectedUser is provided, we'll separate direct and indirect relationships
+  // First, get direct relationships involving the selected user
+  const directCypher = `
+    MATCH (selected:Person {name: $selectedUser})-[r:KNOWS]-(other:Person)
+    RETURN selected.name as person1, other.name as person2
+  `;
+
+  const directRelationships = await executeCypherQuery<{ person1: string, person2: string }>(directCypher, { selectedUser });
+
+  // Then, get indirect relationships (connected through people close to the selected user)
+  const indirectCypher = `
+    // Find users with high closeness to the selected user
+    MATCH (selected:Person {name: $selectedUser})-[r:KNOWS]-(connectedPerson:Person)
+    WHERE r.closeness_score IS NOT NULL
+    WITH selected, connectedPerson, r.closeness_score as closeness
     ORDER BY closeness DESC
     LIMIT 5
     
     // Find relationships between these high-closeness users and others
-    OPTIONAL MATCH (connectedPerson)-[r3:RELATED_TO]-(thirdPerson:Person)
+    MATCH (connectedPerson)-[r2:KNOWS]-(thirdPerson:Person)
     WHERE thirdPerson.name <> selected.name
     
-    // Collect these indirect relationships
-    WITH selected, directRelationships, 
-         collect({person1: connectedPerson.name, person2: thirdPerson.name}) as indirectRelationships
-    
-    // Combine both relationship types and return
-    WITH directRelationships + indirectRelationships as allRelationships
-    UNWIND allRelationships as rel
-    WITH rel WHERE rel.person1 IS NOT NULL AND rel.person2 IS NOT NULL
-    RETURN DISTINCT rel.person1 as person1, rel.person2 as person2
+    RETURN DISTINCT connectedPerson.name as person1, thirdPerson.name as person2
   `;
 
-  const relationships = await executeCypherQuery<{ person1: string, person2: string }>(cypher, { selectedUser });
+  const indirectRelationships = await executeCypherQuery<{ person1: string, person2: string }>(indirectCypher, { selectedUser });
+
+  // Combine relationships, prioritizing direct relationships
+  let allRelationships: { person1: string, person2: string }[] = [];
+
+  // Add all direct relationships first (these include the selected user)
+  allRelationships = [...directRelationships];
+
+  // Add indirect relationships that don't duplicate direct ones
+  indirectRelationships.forEach(rel => {
+    // Check if this relationship is already in our list
+    const isDuplicate = allRelationships.some(
+      existingRel =>
+        (existingRel.person1 === rel.person1 && existingRel.person2 === rel.person2) ||
+        (existingRel.person1 === rel.person2 && existingRel.person2 === rel.person1)
+    );
+
+    if (!isDuplicate) {
+      allRelationships.push(rel);
+    }
+  });
 
   // Fallback to getting all relationships if we don't have enough
-  if (relationships.length < 2) {
+  if (allRelationships.length < 2) {
     const fallbackCypher = `
       MATCH (a:Person), (b:Person)
       WHERE id(a) < id(b)
@@ -173,7 +190,7 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
   }
 
   // Randomly select two different pairs
-  const shuffled = [...relationships].sort(() => 0.5 - Math.random());
+  const shuffled = [...allRelationships].sort(() => 0.5 - Math.random());
   const pair1 = [shuffled[0].person1, shuffled[0].person2] as [string, string];
 
   // Make sure pair2 is different from pair1
