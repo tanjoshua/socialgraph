@@ -1,9 +1,6 @@
 import { initializeDatabase } from "@/lib/db";
 import { getAllPeople } from "@/lib/actions";
-import { ComparisonSection } from "@/components/comparison-section";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserSelector } from "@/components/user-selector";
+import { ComparePageClient } from "@/components/compare-page-client";
 import Link from "next/link";
 
 async function checkDatabaseAndPeople() {
@@ -36,48 +33,25 @@ async function checkDatabaseAndPeople() {
 export default async function ComparePage() {
   const dbResult = await checkDatabaseAndPeople();
 
-  return (
+  return dbResult.success ? (
+    <ComparePageClient
+      people={dbResult.people}
+      enoughPeople={dbResult.enoughPeople}
+      peopleCount={dbResult.peopleCount}
+    />
+  ) : (
     <div className="min-h-screen p-8">
       <main className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Compare Interactions</h1>
-
-        {/* Navigation */}
-        <div className="mb-8">
-          <Tabs defaultValue="compare" className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
-              <TabsTrigger value="home" asChild>
-                <Link href="/">Home</Link>
-              </TabsTrigger>
-              <TabsTrigger value="compare" asChild>
-                <Link href="/compare">Compare Interactions</Link>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* User Selector */}
-        {dbResult.success && <UserSelector people={dbResult.people} />}
-
-
-
-        {dbResult.success && !dbResult.enoughPeople && (
-          <div className="mb-8 p-6 border rounded-md shadow-sm bg-yellow-50 text-yellow-800">
-            <h2 className="text-xl font-semibold mb-2">Not Enough People</h2>
-            <p>You need at least 4 people in the database to make meaningful comparisons.</p>
-            <p className="mt-2">Current count: {dbResult.peopleCount} people</p>
-            <div className="mt-4">
-              <Button asChild>
-                <Link href="/">
-                  Go to Home to Add People
-                </Link>
-              </Button>
-            </div>
+        <div className="p-6 border rounded-md shadow-sm bg-red-50 text-red-800">
+          <h2 className="text-xl font-semibold mb-2">Error</h2>
+          <p>{dbResult.error || 'Failed to connect to database'}</p>
+          <div className="mt-4">
+            <Link href="/" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+              Return to Home
+            </Link>
           </div>
-        )}
-
-        {dbResult.success && dbResult.enoughPeople && (
-          <ComparisonSection />
-        )}
+        </div>
       </main>
     </div>
   );

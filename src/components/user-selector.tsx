@@ -1,45 +1,32 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { UserIcon, XCircleIcon, UserRoundIcon } from "lucide-react"
 import { Person } from "@/lib/actions"
 
-const USER_STORAGE_KEY = "selectedUser"
-
 interface UserSelectorProps {
   people: Person[]
+  selectedUser: string
+  setSelectedUser: (user: string) => void
 }
 
-export function UserSelector({ people }: UserSelectorProps) {
-  const [selectedUser, setSelectedUser] = useState("")
-  
-  // Load selected user from localStorage on component mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY)
-    if (storedUser) {
-      setSelectedUser(storedUser)
-    }
-  }, [])
-
+export function UserSelector({ people, selectedUser, setSelectedUser }: UserSelectorProps) {
   // Handle user selection
   const handleUserSelect = (value: string) => {
     setSelectedUser(value)
-    localStorage.setItem(USER_STORAGE_KEY, value)
   }
 
   // Handle removing user selection
   const handleRemoveSelection = () => {
     setSelectedUser("")
-    localStorage.removeItem(USER_STORAGE_KEY)
   }
 
   return (
@@ -53,7 +40,7 @@ export function UserSelector({ people }: UserSelectorProps) {
             </CardTitle>
           </div>
           <CardDescription>
-            {!!selectedUser 
+            {!!selectedUser
               ? "We will ask you for comparisons of people you know better"
               : "Select who you are for more suitable comparisons"}
           </CardDescription>
@@ -61,9 +48,9 @@ export function UserSelector({ people }: UserSelectorProps) {
         <CardContent>
           <div className="flex flex-wrap items-center gap-3">
             {!!selectedUser && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleRemoveSelection}
                 className="flex items-center gap-1 h-9"
               >
