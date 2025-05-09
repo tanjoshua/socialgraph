@@ -150,7 +150,7 @@ export function ComparisonSection({ selectedUser }: ComparisonSectionProps) {
               className="w-full"
               onClick={() => handleComparisonSubmit(true)}
             >
-              This Pair Interacts More
+              This Pair Has Interacted More
             </Button>
           </CardFooter>
         </Card>
@@ -183,7 +183,7 @@ export function ComparisonSection({ selectedUser }: ComparisonSectionProps) {
               className="w-full"
               onClick={() => handleComparisonSubmit(false)}
             >
-              This Pair Interacts More
+              This Pair Has Interacted More
             </Button>
           </CardFooter>
         </Card>
