@@ -159,13 +159,19 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
   const shuffled = [...allRelationships].sort(() => 0.5 - Math.random());
   const pair1 = [shuffled[0].person1, shuffled[0].person2] as [string, string];
 
-  // Make sure pair2 is different from pair1
+  // Make sure pair2 is different from pair1 (regardless of order)
   let pairIndex = 1;
   while (pairIndex < shuffled.length) {
-    if (
-      (shuffled[pairIndex].person1 !== pair1[0] || shuffled[pairIndex].person2 !== pair1[1]) &&
-      (shuffled[pairIndex].person1 !== pair1[1] || shuffled[pairIndex].person2 !== pair1[0])
-    ) {
+    const potentialPair = [shuffled[pairIndex].person1, shuffled[pairIndex].person2];
+    
+    // Check if the potential pair contains different people than pair1
+    // Two pairs are different if they don't have the same two people (regardless of order)
+    const isDifferentPair = !(
+      (potentialPair[0] === pair1[0] && potentialPair[1] === pair1[1]) || // Same order
+      (potentialPair[0] === pair1[1] && potentialPair[1] === pair1[0])    // Reversed order
+    );
+    
+    if (isDifferentPair) {
       break;
     }
     pairIndex++;
