@@ -117,10 +117,11 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
     });
   }
 
-  // If selectedUser is provided, we'll separate direct and indirect relationships
-  // First, get direct relationships involving the selected user
+  // If selectedUser is provided, we'll get potential pairings with all other users
+  // First, get all potential pairs involving the selected user (regardless of existing relationships)
   const directCypher = `
-    MATCH (selected:Person {name: $selectedUser})-[r:KNOWS]-(other:Person)
+    MATCH (selected:Person {name: $selectedUser}), (other:Person)
+    WHERE selected <> other
     RETURN selected.name as person1, other.name as person2
   `;
 
