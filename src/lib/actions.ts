@@ -127,13 +127,13 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
 
   const directRelationships = await executeCypherQuery<{ person1: string, person2: string }>(directCypher, { selectedUser });
 
-  // Get the top closest people to the selected user
+  // Get the top closest people to the selected user with scores above 1200
   const closestPeopleCypher = `
     MATCH (selected:Person {name: $selectedUser})-[r:KNOWS]-(connectedPerson:Person)
-    WHERE r.closeness_score IS NOT NULL
+    WHERE r.closeness_score IS NOT NULL AND r.closeness_score > 1200
     WITH selected, connectedPerson, r.closeness_score as closeness
     ORDER BY closeness DESC
-    LIMIT 10
+    LIMIT 5
     RETURN connectedPerson.name as name
   `;
 
@@ -163,14 +163,14 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
   let pairIndex = 1;
   while (pairIndex < shuffled.length) {
     const potentialPair = [shuffled[pairIndex].person1, shuffled[pairIndex].person2];
-    
+
     // Check if the potential pair contains different people than pair1
     // Two pairs are different if they don't have the same two people (regardless of order)
     const isDifferentPair = !(
       (potentialPair[0] === pair1[0] && potentialPair[1] === pair1[1]) || // Same order
       (potentialPair[0] === pair1[1] && potentialPair[1] === pair1[0])    // Reversed order
     );
-    
+
     if (isDifferentPair) {
       break;
     }
