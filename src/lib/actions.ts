@@ -130,7 +130,7 @@ export async function getPairsToCompare(selectedUser?: string): Promise<Comparis
   // Get the top closest people to the selected user with scores above 1200
   const closestPeopleCypher = `
     MATCH (selected:Person {name: $selectedUser})-[r:KNOWS]-(connectedPerson:Person)
-    WHERE r.closeness_score IS NOT NULL AND r.closeness_score > 1200
+    WHERE r.closeness_score IS NOT NULL AND r.closeness_score > 1240
     WITH selected, connectedPerson, r.closeness_score as closeness
     ORDER BY closeness DESC
     LIMIT 5
